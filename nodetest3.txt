@@ -1,0 +1,35 @@
+sudo -u postgres psql -> заходим в Postgres под пользователем postgres
+CREATE DATABASE Cometa; -> создание бд под именем Cometa
+\c Cometa; -> данной командой можно зайти в нужную бд, но пока не активируем
+
+CREATE USER cometa_first WITH PASSWORD 'cometa_first'; -> по прежднему в СУБД 
+можно данным кодом создать пользователя, то есть cometa_first - имя пользователя
+а 'cometa_first' - пароль пользователя.
+ALTER USER cometa_first CREATEDB; -> даем пользовутелю разрешение на создание 
+бд.
+ALTER USER cometa_first SUPERUSER; -> так же можно дать ему суперправа
+
+CREATE USER mikki WITH PASSWORD 'mikki';
+ALTER USER mikki CREATEDB;
+ALTER USER mikki SUPERUSER;
+
+У меня не получилось зайти под пользователем, никаким, поэтому я создал таблицу
+под postgres
+
+CREATE TABLE example_table (
+     id SERIAL PRIMARY KEY,
+     name VARCHAR(50),
+     age INT
+);
+тут я создаю таблицу с тримя полям: id, name, age
+где id самозаполняющегося на единцу, на что указывает SERIAL, а PRIMARY KEY 
+указывает на укальность данного поля, а с name -> строковой тип, длиной 50 символов,
+age -> числовой
+
+INSERT INTO example_table (name, age)
+ VALUES ('Иванов', 30), 
+        ('Петров', 25),
+        ('Сидорова', 28);
+тут идет заполнение по соответсвующим полям
+SELECT * FROM example_table; -> и соответсыкнно, показ данных
+
