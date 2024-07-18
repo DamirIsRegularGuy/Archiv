@@ -1,5 +1,5 @@
 [ec2_servers]
-cometa_1 ansible_host=16.171.200.148 
+cometa_1 ansible_host=16.171.200.140 
 
 [ec2_servers:vars]
 ansible_user=ubuntu 
