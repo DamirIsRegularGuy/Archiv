@@ -1,0 +1,13 @@
+---
+- name: установка и настройка NGINX
+  hosts: all
+  become: yes
+
+  tasks:
+    - name: установка NGINX
+      apt:
+        name: nginx
+        state: present
+      # Команда apt используется для установки пакета nginx. Опция 
+      # state: present означает, что пакет должен быть установлен.
+
