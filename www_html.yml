@@ -1,6 +1,6 @@
 ---
 - name: Установить и настроить NGINX и скопировать HTML страницу
-  hosts: cometa_1
+  hosts: ec2_servers
   become: yes
   tasks:
     - name: Установить NGINX

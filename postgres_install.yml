@@ -1,34 +1,41 @@
 ---
-- name: Установить PostgreSQL и создать базу данных с пользователем
-  hosts: cometa_1
+- name: Установка и настройка PostgreSQL
+  hosts: ec2_servers
   become: yes
   vars:
-    db_name: post
-    db_user: post
-    db_password: post 
+    db_name: oscar_db
+    db_user: oscar
+    db_password: your_password_here  # Замените на ваш пароль
   tasks:
     - name: Обновить кеш пакетов APT
       apt:
         update_cache: yes
 
-    - name: Установить PostgreSQL
+    - name: Установка СУБД PostgreSQL и дополнительных пакетов
       apt:
+        name: "{{ item }}"
+        state: present
+      with_items:
+        - postgresql
+        - postgresql-contrib
+
+    - name: Убедиться, что PostgreSQL запущен и включен
+      systemd:
         name: postgresql
-        state: present
+        state: started
+        enabled: yes
 
-    - name: Установить зависимости для управления PostgreSQL
-      apt:
-        name: python3-psycopg2
-        state: present
+    - name: Создать базу данных
+      become_user: postgres
+      shell: >
+        psql -c "CREATE DATABASE {{ db_name }};"
 
-    - name: Создать пользователя PostgreSQL
-      postgresql_user:
-        name: "{{ db_user }}"
-        password: "{{ db_password }}"
-        state: present
+    - name: Создать пользователя
+      become_user: postgres
+      shell: >
+        psql -c "CREATE USER {{ db_user }} WITH PASSWORD '{{ db_password }}';"
 
-    - name: Создать базу данных PostgreSQL
-      postgresql_db:
-        name: "{{ db_name }}"
-        owner: "{{ db_user }}"
-        state: present
+    - name: Дать пользователю все привилегии на базе данных
+      become_user: postgres
+      shell: >
+        psql -c "GRANT ALL PRIVILEGES ON DATABASE {{ db_name }} TO {{ db_user }};"
