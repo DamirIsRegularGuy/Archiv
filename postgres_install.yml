@@ -1,0 +1,34 @@
+---
+- name: Установить PostgreSQL и создать базу данных с пользователем
+  hosts: cometa_1
+  become: yes
+  vars:
+    db_name: post
+    db_user: post
+    db_password: post 
+  tasks:
+    - name: Обновить кеш пакетов APT
+      apt:
+        update_cache: yes
+
+    - name: Установить PostgreSQL
+      apt:
+        name: postgresql
+        state: present
+
+    - name: Установить зависимости для управления PostgreSQL
+      apt:
+        name: python3-psycopg2
+        state: present
+
+    - name: Создать пользователя PostgreSQL
+      postgresql_user:
+        name: "{{ db_user }}"
+        password: "{{ db_password }}"
+        state: present
+
+    - name: Создать базу данных PostgreSQL
+      postgresql_db:
+        name: "{{ db_name }}"
+        owner: "{{ db_user }}"
+        state: present
