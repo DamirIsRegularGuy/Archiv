@@ -1,6 +1,6 @@
 ---
 - name: установка и настройка NGINX
-  hosts: all
+  hosts: ec2_servers
   become: yes
 
   tasks:
@@ -10,4 +10,3 @@
         state: present
       # Команда apt используется для установки пакета nginx. Опция 
       # state: present означает, что пакет должен быть установлен.
-
