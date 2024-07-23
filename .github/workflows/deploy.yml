@@ -2,13 +2,13 @@ name: Push-to-EC2-Prod
 
 # Пушить только на изменения в ветке main
 on:
-  schedule:
-    - cron: '* * * * *'
+  push:
+    branches:
+      - home_work_html 
 
-# Выполнить джоб с заданным именем на последней убунте
 jobs:
   deploy:
-    name: Deploy to EC2 on schedule
+    name: Deploy to EC2 on master branch push
     runs-on: ubuntu-latest
 
 # проверить файлы
