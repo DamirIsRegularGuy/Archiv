@@ -1,0 +1,37 @@
+name: Push-to-EC2-Prod
+
+# Пушить только на изменения в ветке main
+on:
+  schedule:
+    - cron: '* * * * *'
+
+# Выполнить джоб с заданным именем на последней убунте
+jobs:
+  deploy:
+    name: Deploy to EC2 on schedule
+    runs-on: ubuntu-latest
+
+# проверить файлы
+    steps:
+      - name: Checkout the files
+        uses: actions/checkout@v2
+
+# подключиться к серверу, используя заданные ранее # #переменные и скинуть в папку $TARGET наш репозиторий.
+      - name: Deploy to Cometa-Prod
+        uses: easingthemes/ssh-deploy@main
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
+          REMOTE_USER: ${{ secrets.REMOTE_USER }}
+          TARGET: ${{ secrets.TARGET }}
+
+# выполнить удаленные команды на сервере - переместить #файлы, перезапустить веб-сервер.
+      - name: Executing remote ssh commands using ssh key
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.REMOTE_HOST }}
+          username: ${{ secrets.REMOTE_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            sudo mv /home/ubuntu/test.page/* /var/www/test.page/
+            sudo service nginx restart
