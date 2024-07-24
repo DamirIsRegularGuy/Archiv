@@ -3,7 +3,8 @@ name: Push-to-EC2-Prod
 # Запускать по расписанию
 on:
   schedule:
-    - cron: '50 14 * * *'
+    - cron: '50 14 * * *'  # Ежедневно в 14:50 по UTC
+    - cron: '0 * * * *'    # Каждый час в начале часа для тестирования
 
 jobs:
   deploy:
@@ -11,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       # Проверить файлы
-      - name: Checkout the files
+      - name: Checkout the repository
         uses: actions/checkout@v2
       
       # Подключиться к серверу, используя заданные ранее переменные, и
