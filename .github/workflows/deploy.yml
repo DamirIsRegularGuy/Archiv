@@ -1,20 +1,21 @@
 name: Push-to-EC2-Prod
-# Пушить только на изменения в ветке main
+
+# Запускать по расписанию
 on:
   schedule:
-    - cron: '15 2 * * *'
-  push:
-    branches:
-      - home_work_html jobs:
+    - cron: '50 14 * * *'
+
+jobs:
   deploy:
     name: Deploy to EC2 on schedule
     runs-on: ubuntu-latest
-# проверить файлы
     steps:
+      # Проверить файлы
       - name: Checkout the files
         uses: actions/checkout@v2
-# подключиться к серверу, используя заданные ранее # #переменные и 
-# скинуть в папку $TARGET наш репозиторий.
+      
+      # Подключиться к серверу, используя заданные ранее переменные, и
+      # загрузить в папку $TARGET наш репозиторий
       - name: Deploy to Cometa-Prod
         uses: easingthemes/ssh-deploy@main
         env:
@@ -22,8 +23,9 @@ on:
           REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
           REMOTE_USER: ${{ secrets.REMOTE_USER }}
           TARGET: ${{ secrets.TARGET }}
-# выполнить удаленные команды на сервере - переместить #файлы, 
-# перезапустить веб-сервер.
+
+      # Выполнить удаленные команды на сервере - переместить файлы,
+      # перезапустить веб-сервер
       - name: Executing remote ssh commands using ssh key
         uses: appleboy/ssh-action@master
         with:
@@ -33,3 +35,4 @@ on:
           script: |
             sudo mv /home/ubuntu/sum_html1/* /var/www/sum_html.page/
             sudo service nginx restart
+
