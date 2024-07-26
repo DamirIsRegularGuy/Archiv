@@ -1,0 +1,231 @@
+Так, создание пользователей: 
+1) Заходим в систему:
+                     sqlplus / as sysdba
+
+
+2) Создаем пользователе admin:
+                         CREATE USER admin_user IDENTIFIED BY admin_user; -> пользователь admin_user с паролем admin_user
+
+3) Даем ему привилегии admin:
+                              GRANT DBA TO admin_user;
+
+4) Создаем простого пользователя:
+                                 CREATE USER regular_user IDENTIFIED BY regular_user;
+
+5) Даем этому пользователю базовые привилегии:
+                                              GRANT CREATE SESSION TO regular_user;
+                                              GRANT CREATE TABLE TO regular_user;
+                                              GRANT CREATE PROCEDURE TO regular_user;
+то есть соответственно на подключение к БД, создание таблиц и процедур.
+
+6) Создание пользователя для чтения:
+                                    CREATE USER read_only_user IDENTIFIED BY read_only_password;
+
+7) Ему тоже даем право на подключение к БД и ТОЛЬКО на чтение:
+                                                              GRANT CREATE SESSION TO read_only_user;
+                                                              GRANT SELECT ANY TABLE TO read_only_user;
+
+Создание табличных пространств:
+Вообще, что это такое? Это логическая структура для хранения данных, которая помогает организовать и управлять физическим хранилищем базы данных. Табличные пространства объединяют физическое хранилище данных с логическим управлением данными, что позволяет эффективно управлять ресурсами и поддерживать организацию данных. Такое определение дается в открытых источниках.
+
+Как я это понял? Ну, это механизм, если его так можно назвать, который разделяет наших пользователей или таблицы (в зависимости от задачи), чтобы улучшить работу некоторых возможностей БД.
+
+Как создавать? 
+1) Для начала я выделил отдельную директорию под хранение этих пространств.
+Нахожусь вот здесь: /home/oracle.
+Создание директории: mkdir tablespace_dir
+Теперь выполняя команду: ls -l, имеем:
+drwxr-xr-x. 70 oracle    oinstall        4096 Jun 29 09:49 install
+-rwxrwxrwx.  1 vboxdamir vboxdamir 3059705302 Jun 14 14:13 LINUX.X64_193000_db_home.zip
+drwxr-xr-x.  2 oracle    oinstall        4096 Jul 26 14:38 tablespace_dir
+
+2) Теперь заходим опять в Oracle командой: 
+                                          sqlplus / as sysdba 
+и создаем пространства (Для admin):
+                       CREATE TABLESPACE admin_tbs
+                       DATAFILE '/home/oracle/tablespace_dir/admin_tbs01.dbf' SIZE 100M
+                       AUTOEXTEND ON NEXT 10M MAXSIZE UNLIMITED;
+
+"CREATE TABLESPACE admin_tbs" -> Создаёт новое табличное пространство с именем admin_tbs.
+"DATAFILE '/home/oracle/tablespace_dir/admin_tbs01.dbf' SIZE 100M" -> где создает и каким начальным размером, а именно в 100 мб.
+"AUTOEXTEND ON NEXT 10M MAXSIZE UNLIMITED;" -> Если файл заполняется, то он увеличивает его на 10 мб, а MAXSIZE UNLIMITED - говорит об увеличении файла пока на диске есть место.
+
+Пространство для простого пользователя:
+                       CREATE TABLESPACE user_tbs
+                       DATAFILE '/home/oracle/tablespace_dir/user_tbs01.dbf' SIZE 100M
+                       AUTOEXTEND ON NEXT 10M MAXSIZE UNLIMITED;
+Все тоже самое, только меняется файл хранения, да, кстати, все пространтва хранятся в файлах с расширением ".dbf"
+
+Пространство для пользователя, который умеет только читать:
+                       CREATE TABLESPACE read_only_tbs
+                       DATAFILE '/home/oracle/tablespace_dir/read_only_tbs01.dbf' SIZE 100M
+                       AUTOEXTEND ON NEXT 10M MAXSIZE UNLIMITED;  
+
+Так же надо препоставить квоту на табличные пространства:
+                       ALTER USER admin_user QUOTA UNLIMITED ON admin_tbs;
+                       ALTER USER regular_user QUOTA UNLIMITED ON user_tbs;
+                       ALTER USER read_only_user QUOTA UNLIMITED ON read_only_tbs;
+  
+Создание таблиц:
+Для этого переходим в пользователя admin: CONNECT admin_user/admin_user;
+
+1) Создадим таблицы для пользователя admin:
+              CREATE TABLE employees (
+              emp_id NUMBER PRIMARY KEY,
+              emp_name VARCHAR(50),
+              emp_position VARCHAR(50),
+              emp_salary NUMBER
+              ) TABLESPACE admin_tbs;
+Таблица сотрудников, имеющая поля id, name, position, salary.
+
+Ее заполнение:
+INSERT INTO employees (emp_id, emp_name, emp_position, emp_salary) VALUES (1, 'John Doe', 'Manager', 75000);
+
+INSERT INTO employees (emp_id, emp_name, emp_position, emp_salary) VALUES (2, 'Jane Smith', 'Developer', 68000);
+
+INSERT INTO employees (emp_id, emp_name, emp_position, emp_salary) VALUES (3, 'Alice Johnson', 'Analyst', 72000);
+
+INSERT INTO employees (emp_id, emp_name, emp_position, emp_salary) VALUES (4, 'Bob Brown', 'Designer', 65000);
+
+INSERT INTO employees (emp_id, emp_name, emp_position, emp_salary) VALUES (5, 'Carol White', 'Tester', 60000);
+
+
+Вторая таблица - Продукты:
+              CREATE TABLE products (
+              prod_id NUMBER PRIMARY KEY,
+              prod_name VARCHAR(50),
+              prod_category VARCHAR(50),
+              prod_price NUMBER
+              ) TABLESPACE admin_tbs; 
+
+Заполнение:
+INSERT INTO products (prod_id, prod_name, prod_category, prod_price) VALUES (1, 'Laptop', 'Electronics', 1200);
+
+INSERT INTO products (prod_id, prod_name, prod_category, prod_price) VALUES (2, 'Smartphone', 'Electronics', 800);
+
+INSERT INTO products (prod_id, prod_name, prod_category, prod_price) VALUES (3, 'Table', 'Furniture', 150);
+
+INSERT INTO products (prod_id, prod_name, prod_category, prod_price) VALUES (4, 'Coffee Maker', 'Appliances', 100);
+
+
+Третья таблица - Заказы:
+              CREATE TABLE orders (
+              order_id NUMBER PRIMARY KEY,
+              order_date DATE,
+              order_amount NUMBER,
+              order_status VARCHAR2(20)
+              )TABLESPACE admin_tbs;
+
+Заполнение:
+INSERT INTO orders (order_id, order_date, order_amount, order_status) VALUES (1, TO_DATE('2024-07-01', 'YYYY-MM-DD'), 250.00,'Open');
+
+INSERT INTO orders (order_id, order_date, order_amount, order_status) VALUES (2, TO_DATE('2024-07-05', 'YYYY-MM-DD'), 100.00, 'Open');
+
+INSERT INTO orders (order_id, order_date, order_amount, order_status) VALUES (3, TO_DATE('2024-07-10', 'YYYY-MM-DD'), 175.00, 'Close');
+
+INSERT INTO orders (order_id, order_date, order_amount, order_status) VALUES (4, TO_DATE('2024-07-15', 'YYYY-MM-DD'), 80.00, 'Error');
+
+
+
+Создание таблиц для Простого пользователя, для этого нужно перейти в него следующим образом: CONNECT regular_user/regular_user; и можно провериить, что мы под ним или нет, вот такой командой: SELECT USER FROM dual; и она покажет:
+
+USER
+--------------------------------------------------------------------------------
+REGULAR_USER
+
+Таблица номер 1 -> CREATE TABLE customers (
+    customer_id NUMBER PRIMARY KEY,
+    customer_name VARCHAR2(50),
+    customer_email VARCHAR2(100),
+    customer_phone VARCHAR2(15)
+) TABLESPACE user_tbs;
+
+Таблица номер 2 -> CREATE TABLE customer_orders (
+    order_id NUMBER PRIMARY KEY,
+    customer_id NUMBER,
+    order_date DATE,
+    order_amount NUMBER,
+    order_status VARCHAR2(20),
+    FOREIGN KEY (customer_id) REFERENCES customers(customer_id)
+) TABLESPACE user_tbs;
+
+Заполнение:
+
+Первая таблица ->
+INSERT INTO customers (customer_id, customer_name, customer_email, customer_phone) VALUES
+(1, 'Alice Green', 'alice.green@example.com', '123-456-7890');
+
+INSERT INTO customers (customer_id, customer_name, customer_email, customer_phone) VALUES
+(2, 'Bob White', 'bob.white@example.com', '987-654-3210');
+
+Вторая таблица ->
+INSERT INTO customer_orders (order_id, customer_id, order_date, order_amount, order_status) VALUES
+(1, 1, TO_DATE('2024-07-01', 'YYYY-MM-DD'), 250.00, 'Shipped');
+
+INSERT INTO customer_orders (order_id, customer_id, order_date, order_amount, order_status) VALUES
+(2, 2, TO_DATE('2024-07-05', 'YYYY-MM-DD'), 100.00, 'Pending');
+
+
+
+Для создания таблиц третьему пользователю придется пойти немного другим путем, а именно:
+1) Переходим в admin -> CONNECT admin_user/admin_user;
+2) Даем привилегии на создание таблиц -> GRANT CREATE TABLE TO read_only_user;
+3) Подключаемся под этим пользователем -> CONNECT read_only_user/read_only_user;
+4) Создаем таблицы ->
+                     CREATE TABLE new_products_new (
+                     prod_id NUMBER PRIMARY KEY,
+                     prod_name VARCHAR2(50),
+                     prod_category VARCHAR2(50),
+                     prod_price NUMBER
+                     ) TABLESPACE read_only_tbs;
+
+
+                     CREATE TABLE inventory (
+                     item_id NUMBER PRIMARY KEY,
+                     item_name VARCHAR2(50),
+                     item_category VARCHAR2(50),
+                     item_quantity NUMBER
+                     ) TABLESPACE read_only_tbs;
+
+6) Затем надо предоставить права на вставку данных этому пользователю, поэтому опять подключаемся как admin CONNECT admin_user/admin_user;
+7) Выполняем это: GRANT INSERT ANY TABLE TO read_only_user;
+8) Переходи обратно: CONNECT read_only_user/read_only_user;
+9) Заполняем таблицы -> 
+        INSERT INTO new_products_new (prod_id, prod_name, prod_category, prod_price) VALUES (4, 'Monitor', 'Electronics', 300);
+        INSERT INTO new_products_new (prod_id, prod_name, prod_category, prod_price) VALUES (1, 'Keyboard', 'Electronics', 50);
+        INSERT INTO new_products_new (prod_id, prod_name, prod_category, prod_price) VALUES (2, 'Mouse', 'Electronics', 25);
+        INSERT INTO new_products_new (prod_id, prod_name, prod_category, prod_price) VALUES (3, 'Tablet', 'Electronics', 600);
+
+        
+
+        INSERT INTO inventory (item_id, item_name, item_category, item_quantity) VALUES (1, 'Desk Chair', 'Furniture', 150);
+        INSERT INTO inventory (item_id, item_name, item_category, item_quantity) VALUES (2, 'Office Desk', 'Furniture', 75);
+        INSERT INTO inventory (item_id, item_name, item_category, item_quantity) VALUES (3, 'Printer', 'Electronics', 20);
+
+10) Переходим опять в admin: CONNECT admin_user/admin_user; и забираем ранее данные права следующими командами:
+               REVOKE CREATE TABLE FROM read_only_user;
+               REVOKE INSERT ANY TABLE FROM read_only_user;
+
+
+Четвертое задание:
+Я выше это делал, но здесь будет более подробнее.
+
+Начнем с расширения имеющихся датафайлов, как это реализовать, а вот так:
+        ALTER DATABASE DATAFILE '/home/oracle/tablespace_dir/admin_tbs01.dbf' 
+        RESIZE 200M;
+Тут мы увеличили этот файл, по данному пути, до 200 мб, а можно это автоматизировать, чтобы файлы сами расширялись при надобности, как я выше это делал, делается это следующим образом:
+        ALTER DATABASE DATAFILE '/home/oracle/tablespace_dir/admin_tbs01.dbf' 
+        AUTOEXTEND ON NEXT 10M MAXSIZE UNLIMITED;
+Здесь он будет расширяться каждый раз, когда ему не будет хватать места, на 10 мб, пока этого позволяет объём диска.
+
+Добавление осуществляется так:  
+        ALTER TABLESPACE admin_tbs
+        ADD DATAFILE '/home/oracle/tablespace_dir/admin_tbs02.dbf' 
+        SIZE 100M  
+        AUTOEXTEND ON NEXT 10M MAXSIZE UNLIMITED;
+Тут мы добавили в admin_tbs новый датафайл, а именно admin_tbs02.dbf, размером 100 мб и авторасширением на 10 мб.
+
+SELECT file_name, tablespace_name, bytes/1024/1024 AS MB
+FROM dba_data_files;
+При помощи этой команды можно просмотреть всю информацию о датафайлах
+

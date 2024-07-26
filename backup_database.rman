@@ -1,0 +1,8 @@
+# RMAN script to backup the entire database
+
+RUN {
+    BACKUP DATABASE;
+    BACKUP ARCHIVELOG ALL;
+    DELETE OBSOLETE;
+}
+

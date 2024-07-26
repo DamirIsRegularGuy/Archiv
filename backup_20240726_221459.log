@@ -1,0 +1,84 @@
+
+Recovery Manager: Release 19.0.0.0.0 - Production on Fri Jul 26 22:14:59 2024
+Version 19.3.0.0.0
+
+Copyright (c) 1982, 2019, Oracle and/or its affiliates.  All rights reserved.
+
+connected to target database: COMETA (DBID=1600848071)
+
+RMAN> # RMAN script to backup the entire database
+2> 
+3> RUN {
+4>     BACKUP DATABASE;
+5>     BACKUP ARCHIVELOG ALL;
+6>     DELETE OBSOLETE;
+7> }
+8> 
+9> 
+Starting backup at 26-JUL-24
+using target database control file instead of recovery catalog
+allocated channel: ORA_DISK_1
+channel ORA_DISK_1: SID=270 device type=DISK
+channel ORA_DISK_1: starting full datafile backup set
+channel ORA_DISK_1: specifying datafile(s) in backup set
+input datafile file number=00001 name=/u01/app/oracle/oradata/COMETA/system01.dbf
+input datafile file number=00003 name=/u01/app/oracle/oradata/COMETA/sysaux01.dbf
+input datafile file number=00004 name=/u01/app/oracle/oradata/COMETA/undotbs01.dbf
+input datafile file number=00002 name=/home/oracle/tablespace_dir/user_tbs01.dbf
+input datafile file number=00005 name=/home/oracle/tablespace_dir/admin_tbs01.dbf
+input datafile file number=00008 name=/home/oracle/tablespace_dir/read_only_tbs01.dbf
+input datafile file number=00007 name=/u01/app/oracle/oradata/COMETA/users01.dbf
+channel ORA_DISK_1: starting piece 1 at 26-JUL-24
+channel ORA_DISK_1: finished piece 1 at 26-JUL-24
+piece handle=/home/oracle/install/dbs/0430tnb8_1_1 tag=TAG20240726T221503 comment=NONE
+channel ORA_DISK_1: backup set complete, elapsed time: 00:00:45
+Finished backup at 26-JUL-24
+
+Starting backup at 26-JUL-24
+current log archived
+using channel ORA_DISK_1
+channel ORA_DISK_1: starting archived log backup set
+channel ORA_DISK_1: specifying archived log(s) in backup set
+input archived log thread=1 sequence=9 RECID=1 STAMP=1175350302
+input archived log thread=1 sequence=10 RECID=2 STAMP=1175379351
+channel ORA_DISK_1: starting piece 1 at 26-JUL-24
+channel ORA_DISK_1: finished piece 1 at 26-JUL-24
+piece handle=/home/oracle/install/dbs/0530tnco_1_1 tag=TAG20240726T221552 comment=NONE
+channel ORA_DISK_1: backup set complete, elapsed time: 00:00:03
+Finished backup at 26-JUL-24
+
+Starting Control File and SPFILE Autobackup at 26-JUL-24
+piece handle=/home/oracle/install/dbs/c-1600848071-20240726-01 comment=NONE
+Finished Control File and SPFILE Autobackup at 26-JUL-24
+
+RMAN retention policy will be applied to the command
+RMAN retention policy is set to redundancy 1
+using channel ORA_DISK_1
+Deleting the following obsolete backups and copies:
+Type                 Key    Completion Time    Filename/Handle
+-------------------- ------ ------------------ --------------------
+Backup Set           1      05-JUL-24         
+  Backup Piece       1      05-JUL-24          /tmp/dump/012v5elo_1_1
+Archive Log          1      26-JUL-24          /home/oracle/install/dbs/arch1_9_1172870411.dbf
+Backup Set           2      05-JUL-24         
+  Backup Piece       2      05-JUL-24          /home/oracle/install/dbs/c-1600848071-20240705-00
+Backup Set           3      26-JUL-24         
+  Backup Piece       3      26-JUL-24          /home/oracle/install/dbs/c-1600848071-20240726-00
+deleted archived log
+archived log file name=/home/oracle/install/dbs/arch1_9_1172870411.dbf RECID=1 STAMP=1175350302
+deleted backup piece
+backup piece handle=/home/oracle/install/dbs/c-1600848071-20240705-00 RECID=2 STAMP=1173535424
+deleted backup piece
+backup piece handle=/home/oracle/install/dbs/c-1600848071-20240726-00 RECID=3 STAMP=1175353608
+Deleted 3 objects
+
+RMAN-06207: warning: 1 objects could not be deleted for DISK channel(s) due
+RMAN-06208:          to mismatched status.  Use CROSSCHECK command to fix status
+RMAN-06210: List of Mismatched objects
+RMAN-06211: ==========================
+RMAN-06212:   Object Type   Filename/Handle
+RMAN-06213: --------------- ---------------------------------------------------
+RMAN-06214: Backup Piece    /tmp/dump/012v5elo_1_1
+
+
+Recovery Manager complete.
