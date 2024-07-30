@@ -1,0 +1,30 @@
+- name: Deploy web application
+  hosts: all
+  become: yes
+
+  tasks:
+    - name: Install Docker
+      yum:
+        name: docker
+        state: present
+
+    - name: Start and enable Docker service
+      service:
+        name: docker
+        state: started
+        enabled: yes
+
+    - name: Build Docker image
+      docker_image:
+        name: my_web_app
+        build:
+          path: /home/vboxdamir/my_web_app
+
+    - name: Run Docker container
+      docker_container:
+        name: my_web_app_container
+        image: my_web_app
+        state: started
+        ports:
+          - "80:80"
+
